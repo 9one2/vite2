@@ -13,6 +13,7 @@ export default {
           text: '시작하기',
           items: [
             { text: '소개', link: '/guide/introduction' },
+            { text: '새로운 가이드 페이지', link: '/guide/new-guide-page' },
             // 더 많은 페이지 추가 가능
           ]
         }

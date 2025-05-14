@@ -16,6 +16,32 @@ export default {
             { text: '새로운 가이드 페이지', link: '/guide/new-guide-page' },
             // 더 많은 페이지 추가 가능
           ]
+        },
+        {
+          text: '디자인 시스템',
+          items: [
+            { text: '색상 팔레트', link: '/guide/new-guide-page' },
+            { text: '타이포그래피', link: '/guide/new-guide-page' },
+            { text: '아이콘', link: '/guide/new-guide-page' },
+            { text: '그리드 시스템', link: '/guide/new-guide-page' }
+          ]
+        },
+        {
+          text: '컴포넌트',
+          items: [
+            { text: '버튼', link: '/guide/new-guide-page' },
+            { text: '카드', link: '/guide/new-guide-page' }
+          ]
+        },
+        {
+          text: '패턴 라이브러리',
+          items: [
+            { text: '네비게이션', link: '/guide/new-guide-page' },
+            { text: '폼 요소', link: '/guide/new-guide-page' },
+            { text: '모달', link: '/guide/new-guide-page' },
+            { text: '테이블', link: '/guide/new-guide-page' },
+            { text: '알림', link: '/guide/new-guide-page' }
+          ]
         }
       ]
     },

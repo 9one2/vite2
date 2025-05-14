@@ -1,0 +1,46 @@
+name: Deploy VitePress Site to Pages
+
+on:
+  push:
+    branches: [main] # 또는 주 브랜치 이름 (e.g., master)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Git 히스토리 전체를 가져옵니다 (lastUpdated 기능을 위해 필요할 수 있음)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18 # 또는 최신 LTS 버전
+          cache: 'npm' # 또는 pnpm, yarn
+      - name: Install dependencies
+        run: npm install # 또는 pnpm install, yarn install
+      - name: Build
+        run: npm run docs:build # 또는 pnpm docs:build, yarn docs:build
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 

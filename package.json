@@ -1,0 +1,16 @@
+{
+  "name": "vite2-wiki",
+  "version": "1.0.0",
+  "description": "Design Wiki powered by VitePress",
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "vitepress": "^1.0.0-rc.44",
+    "vue": "^3.4.15"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+} 

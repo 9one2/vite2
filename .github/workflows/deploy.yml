@@ -1,60 +1,69 @@
-name: Build and Deploy VitePress Site
+name: Simple Build and Deploy VitePress Site
 
-concurrency: # 동시 실행 방지 그룹 설정
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 on:
   push:
-    branches: [main] # 또는 주 브랜치 이름
-  repository_dispatch:
-    types: [strapi-webhook] # Strapi 웹훅에서 보낸 event_type과 일치해야 함
+    branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read # checkout을 위해 필요
-  pages: write    # GitHub Pages에 배포하기 위해 필요
-  id-token: write # GitHub Pages OIDC 인증을 위해 필요
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  build-and-deploy: # 이전에는 build와 deploy 작업이 분리되어 있었으나, 하나로 합쳐도 무방합니다.
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4 # v3 -> v4로 업데이트 권장
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: List files in docs directory (디버깅)
+        run: |
+          echo "=== Listing docs directory ==="
+          ls -la docs/
+          echo "=== Listing docs/guide directory ==="
+          ls -la docs/guide/
+
       - name: Setup Node.js
-        uses: actions/setup-node@v4 # v3 -> v4로 업데이트 권장
+        uses: actions/setup-node@v4
         with:
-          node-version: 18 # 또는 프로젝트에 맞는 Node.js 버전
+          node-version: 18
           cache: 'npm'
 
       - name: Install Dependencies
         run: npm ci
-        # npm install node-fetch --save-dev 또는 --save (스크립트에서 사용 시)
 
-      - name: Fetch Strapi Content and Generate Markdown
-        run: npm run docs:fetch-content
-        env:
-          STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
-          STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+      # Strapi 단계 일시적으로 제외
+      # - name: Fetch Strapi Content and Generate Markdown
+      #   run: npm run docs:fetch-content
+      #   env:
+      #     STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+      #     STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
 
       - name: Build VitePress Site
         run: npm run docs:build
-        env: # 빌드 시점에 환경 변수로 Strapi API 정보 전달
-          STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
-          STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }} # 공개 API가 아니라면 토큰 필요
+
+      - name: List build output (디버깅)
+        run: |
+          echo "=== Listing build output ==="
+          ls -la docs/.vitepress/dist/
+          echo "=== Listing guide directory in build output ==="
+          ls -la docs/.vitepress/dist/guide/
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4 # v3 -> v4로 업데이트 권장
+        uses: actions/configure-pages@v4
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3 # v2 -> v3로 업데이트 권장
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/.vitepress/dist # VitePress 1.x 버전의 기본 빌드 경로
+          path: docs/.vitepress/dist
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 # v2 -> v3, v4로 업데이트 권장 
+        uses: actions/deploy-pages@v4 

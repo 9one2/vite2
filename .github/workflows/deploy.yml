@@ -1,12 +1,17 @@
 name: Simple Build and Deploy VitePress Site
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.run_id }}-build
   cancel-in-progress: true
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - main
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy.yml'
+      - 'package.json'
   workflow_dispatch:
 
 permissions:

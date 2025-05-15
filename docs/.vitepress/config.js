@@ -11,74 +11,83 @@
 // async 함수를 사용하여 사이드바를 동적으로 생성할 수 있습니다.
 
 async function getStrapiSidebar() {
-  const strapiApiUrl = process.env.STRAPI_API_URL_FOR_SIDEBAR || process.env.STRAPI_API_URL; // 환경 변수 사용
+  const strapiApiUrl = process.env.STRAPI_API_URL_FOR_SIDEBAR || process.env.STRAPI_API_URL;
   const strapiApiToken = process.env.STRAPI_API_TOKEN_FOR_SIDEBAR || process.env.STRAPI_API_TOKEN;
 
-  if (!strapiApiUrl) {
-    console.warn('STRAPI_API_URL_FOR_SIDEBAR is not defined. Using default sidebar.');
-    return { // 기본 사이드바 또는 빈 사이드바
-      '/guide/': [
-        { text: '소개', link: '/guide/introduction' }
-      ]
-    };
-  }
+  let strapiGeneratedSidebarItems = [];
 
-  const headers = { 'Content-Type': 'application/json' };
-  if (strapiApiToken) {
-    headers['Authorization'] = `Bearer ${strapiApiToken}`;
-  }
-
-  try {
-    // Strapi에서 사이드바 구조를 위한 데이터를 가져옵니다.
-    // 예: 카테고리별 문서 목록 또는 특정 필드를 기준으로 그룹화
-    // 이 API 엔드포인트는 직접 구성해야 합니다.
-    // 예시: /api/documents?fields[0]=title&fields[1]=slug&fields[2]=category&populate=category&sort=category.name:asc,title:asc
-    const res = await fetch(`${strapiApiUrl}/documents?fields[0]=title&fields[1]=slug&fields[2]=category_slug&fields[3]=category_name&sort=category_name:asc,title:asc&publicationState=live`, { headers });
-    if (!res.ok) {
-      console.error(`Failed to fetch sidebar data: ${res.status} ${res.statusText}`);
-      return {}; // 오류 시 빈 사이드바
-    }
-    const { data } = await res.json();
-
-    if (!data || !Array.isArray(data)) {
-      console.error('No data received or data is not an array from Strapi API for sidebar.');
-      return {};
+  if (strapiApiUrl) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (strapiApiToken) {
+      headers['Authorization'] = `Bearer ${strapiApiToken}`;
     }
 
-    // Strapi 데이터를 VitePress 사이드바 형식으로 변환
-    // 예시: 카테고리별로 그룹화
-    const sidebar = {
-      '/guide/': [] // 모든 동적 페이지가 /guide/ 하위에 있다고 가정
-    };
+    try {
+      const res = await fetch(`${strapiApiUrl}/documents?fields[0]=title&fields[1]=slug&fields[2]=category_slug&fields[3]=category_name&sort=category_name:asc,title:asc&publicationState=live`, { headers });
+      if (!res.ok) {
+        console.error(`Failed to fetch sidebar data from Strapi: ${res.status} ${res.statusText}`);
+      } else {
+        const { data } = await res.json();
+        if (data && Array.isArray(data)) {
+          const categories = {};
+          data.forEach(item => {
+            const attrs = item.attributes;
+            const categorySlug = attrs.category_slug || 'general';
+            const categoryName = attrs.category_name || '일반';
 
-    const categories = {}; // { 'category-slug': { text: 'Category Name', items: [] } }
-
-    data.forEach(item => {
-      const attrs = item.attributes;
-      const categorySlug = attrs.category_slug || 'general'; // 카테고리 슬러그 필드가 있다고 가정
-      const categoryName = attrs.category_name || '일반';   // 카테고리 이름 필드가 있다고 가정
-
-      if (!categories[categorySlug]) {
-        categories[categorySlug] = {
-          text: categoryName,
-          // collapsible: true, // 필요에 따라
-          // collapsed: false,  // 필요에 따라
-          items: []
-        };
+            if (!categories[categorySlug]) {
+              categories[categorySlug] = {
+                text: categoryName,
+                collapsible: true,
+                items: []
+              };
+            }
+            categories[categorySlug].items.push({
+              text: attrs.title,
+              link: `/guide/${attrs.slug}`
+            });
+          });
+          strapiGeneratedSidebarItems = Object.values(categories);
+        } else {
+          console.error('No data received or data is not an array from Strapi API for sidebar.');
+        }
       }
-      categories[categorySlug].items.push({
-        text: attrs.title,
-        link: `/guide/${attrs.slug}` // Markdown 파일 생성 방식과 일치해야 함
-      });
-    });
-
-    sidebar['/guide/'] = Object.values(categories);
-    return sidebar;
-
-  } catch (error) {
-    console.error('Error fetching or processing sidebar data from Strapi:', error);
-    return {}; // 오류 시 빈 사이드바
+    } catch (error) {
+      console.error('Error fetching or processing sidebar data from Strapi:', error);
+    }
+  } else {
+    console.warn('STRAPI_API_URL_FOR_SIDEBAR is not defined. Strapi sidebar items will be empty.');
   }
+
+  // --- 로컬 정적 파일에 대한 사이드바 항목 정의 ---
+  const localStaticSidebarSection = {
+    text: '시작하기 (로컬)', // 또는 '기본 가이드' 등
+    collapsible: true,
+    items: [
+      { text: '소개 (Introduction)', link: '/guide/introduction' },
+      { text: '새로운 가이드 페이지', link: '/guide/new-guide-page' },
+      // test.md 파일도 사이드바에 포함시키려면 아래 주석을 해제하세요.
+      // { text: '테스트 페이지', link: '/guide/test' },
+    ]
+  };
+  // --- 로컬 정적 파일 항목 정의 끝 ---
+
+  const sidebar = {
+    // '/guide/' 경로에 대한 사이드바 구성
+    // 로컬 정적 파일 섹션을 항상 먼저 표시하고, 그 다음에 Strapi에서 가져온 항목들을 표시합니다.
+    '/guide/': [
+      localStaticSidebarSection, // 로컬 파일 섹션 추가
+      ...strapiGeneratedSidebarItems // Strapi에서 생성된 항목들
+    ],
+    // 다른 경로에 대한 사이드바가 있다면 여기에 추가
+    // 예: '/api/': [/* ... */]
+  };
+
+  // 만약 Strapi에서 가져온 항목이 없을 경우, 로컬 섹션만 남게 됩니다.
+  // 또는, Strapi 항목이 특정 카테고리로만 오도록 하고 싶다면,
+  // localStaticSidebarSection을 strapiGeneratedSidebarItems 배열의 특정 위치에 삽입할 수도 있습니다.
+
+  return sidebar;
 }
 
 

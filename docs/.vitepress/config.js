@@ -97,7 +97,8 @@ export default {
   themeConfig: {
     nav: [
       { text: '홈', link: '/' },
-      { text: '가이드', link: '/guide/' }
+      { text: '가이드', link: '/guide/' },
+      { text: '디자인', link: '/design/' }
     ],
     // 동적 사이드바 대신 정적 사이드바 사용
     sidebar: {
@@ -109,6 +110,17 @@ export default {
             { text: '소개 (Introduction)', link: '/guide/introduction' },
             { text: '새로운 가이드 페이지', link: '/guide/new-guide-page' },
             { text: '테스트 페이지', link: '/guide/test' },
+          ]
+        }
+      ],
+      // 새로 추가한 디자인 폴더의 문서
+      '/design/': [
+        {
+          text: '디자인 시스템',
+          collapsible: true,
+          items: [
+            { text: '디자인 시스템', link: '/design/desginSystem' },
+            // 이 폴더에 추가한 다른 문서들도 여기에 포함
           ]
         }
       ]

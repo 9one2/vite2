@@ -1,17 +1,15 @@
-name: Simple Build and Deploy VitePress Site
+name: Build and Deploy VitePress Site
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.run_id }}-build
+  group: pages-deploy-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 on:
   push:
     branches: 
       - main
-    paths:
-      - 'docs/**'
-      - '.github/workflows/deploy.yml'
-      - 'package.json'
+    paths-ignore:
+      - '.github/workflows/static.yml' # static.yml 파일은 제외
   workflow_dispatch:
 
 permissions:
@@ -21,6 +19,9 @@ permissions:
 
 jobs:
   build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,6 +35,8 @@ jobs:
           ls -la docs/
           echo "=== Listing docs/guide directory ==="
           ls -la docs/guide/
+          echo "=== Listing docs/design directory ==="
+          ls -la docs/design/ || echo "디자인 디렉토리 없음"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -44,7 +47,13 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # Strapi 단계 일시적으로 제외
+      - name: Clear VitePress cache
+        run: |
+          rm -rf docs/.vitepress/cache
+          rm -rf docs/.vitepress/dist
+          echo "VitePress cache cleared"
+
+      # Strapi 단계 (필요시 활성화)
       # - name: Fetch Strapi Content and Generate Markdown
       #   run: npm run docs:fetch-content
       #   env:
@@ -59,8 +68,11 @@ jobs:
           echo "=== Listing build output ==="
           ls -la docs/.vitepress/dist/
           echo "=== Listing guide directory in build output ==="
-          ls -la docs/.vitepress/dist/guide/
+          ls -la docs/.vitepress/dist/guide/ || echo "guide 디렉토리 없음"
+          echo "=== Listing design directory in build output ==="
+          ls -la docs/.vitepress/dist/design/ || echo "design 디렉토리 없음"
 
+      # GitHub Pages 설정 및 배포 단계
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
@@ -71,4 +83,13 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 
+        uses: actions/deploy-pages@v4
+
+      - name: Debug Environment
+        run: |
+          echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
+          echo "GITHUB_WORKFLOW: $GITHUB_WORKFLOW"
+          echo "GITHUB_ACTION: $GITHUB_ACTION"
+          echo "All markdown files in docs directory:"
+          find docs -name "*.md" | sort
+          echo "Build complete and deployed!" 

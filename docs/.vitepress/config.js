@@ -66,8 +66,7 @@ async function getStrapiSidebar() {
     items: [
       { text: '소개 (Introduction)', link: '/guide/introduction' },
       { text: '새로운 가이드 페이지', link: '/guide/new-guide-page' },
-      // test.md 파일도 사이드바에 포함시키려면 아래 주석을 해제하세요.
-      // { text: '테스트 페이지', link: '/guide/test' },
+      { text: '테스트 페이지', link: '/guide/test' },
     ]
   };
   // --- 로컬 정적 파일 항목 정의 끝 ---

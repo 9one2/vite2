@@ -38,10 +38,14 @@ async function fetchAndGenerate() {
     console.log(`Received ${data.length} documents. Generating Markdown files...`);
 
     // 기존 파일 삭제 (선택 사항)
-    await fs.emptyDir(docsPath);
-    // introduction.md 같은 고정 페이지는 유지하고 싶다면 특정 패턴만 삭제하거나,
-    // Strapi에서 가져온 파일만 관리하는 하위 폴더를 만들 수 있습니다.
-    // 예: await fs.emptyDir(path.join(docsPath, 'strapi-generated'));
+    // await fs.emptyDir(docsPath); // <--- 이 라인을 주석 처리하여 로컬 파일 삭제 방지
+    // 만약 Strapi에서 가져온 파일과 로컬 파일의 slug가 겹칠 경우, Strapi 파일이 덮어쓸 수 있습니다.
+    // 이를 방지하려면, Strapi 콘텐츠를 별도 하위 폴더(예: docs/guide/strapi-content)에 생성하는 것을 고려하세요.
+    // 그 경우, docsPath 변수와 config.js의 사이드바 링크도 수정해야 합니다.
+
+    // 임시로, 로컬 파일 보존을 위해 위 라인을 주석 처리합니다.
+    // 만약 docs/guide 폴더에 Strapi에서 생성하지 않는 introduction.md 등이 있다면,
+    // 이 파일들은 이제 삭제되지 않습니다.
 
     for (const item of data) {
       const attributes = item.attributes;

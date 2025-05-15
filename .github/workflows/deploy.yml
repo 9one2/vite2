@@ -1,5 +1,9 @@
 name: Build and Deploy VitePress Site
 
+concurrency: # 동시 실행 방지 그룹 설정
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main] # 또는 주 브랜치 이름

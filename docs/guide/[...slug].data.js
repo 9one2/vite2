@@ -1,6 +1,7 @@
+/*
 import { createContentLoader } from 'vitepress'
 
-export default createContentLoader('guide/**/*.md', { // 이 파일과 매칭되는 Markdown 파일 패턴
+export default createContentLoader('guide/** /*.md', { // 이 파일과 매칭되는 Markdown 파일 패턴
   async transform(rawData) {
     // rawData는 매칭된 모든 Markdown 파일의 배열입니다.
     // 여기서는 params.slug를 사용하여 특정 페이지만 필터링하거나,
@@ -72,3 +73,4 @@ export default createContentLoader('guide/**/*.md', { // 이 파일과 매칭되
 // {{ frontmatter.strapiContent }} <-- Strapi에서 가져온 content (Markdown 형식이어야 함)
 //
 // 또는 <script setup>을 사용하여 페이지 컴포넌트 내에서 직접 데이터를 사용할 수 있습니다. 
+*/

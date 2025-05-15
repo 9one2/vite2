@@ -1,3 +1,4 @@
+/*
 export default {
   async paths() {
     const strapiApiUrl = process.env.STRAPI_API_URL; // GitHub Actions에서 주입된 환경 변수
@@ -45,4 +46,5 @@ export default {
       return [];
     }
   }
-} 
+}
+*/ 
